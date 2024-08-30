@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AccountStatus {
+  active
+  banned
+}
+
+enum UserStatus {
+  user
+  admin
+}
+
+enum UserOnboardingStepStatus {
+  PENDING
+  COMPLETED
+}
+
+enum AuthenticationMethodType {
+  EMAIL_PASSWORD
+}
+
+enum AuthenticationMethodStatus {
+  PENDING
+  ACTIVE
+}
+
+model UserOnboardingVerificationCode {
+  id               String         @id @default(uuid())
+  code             String
+  userOnboarding   UserOnboarding @relation(fields: [userOnboardingId], references: [id], onDelete: Cascade)
+  userOnboardingId String
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @default(now()) @map("updated_at")
+
+  @@map("users_onboardings_verification_codes")
+}
+
+model User {
+  id             String          @id @unique @default(uuid()) @db.Uuid
+  email          String          @unique
+  firstName      String
+  lastName       String
+  password       String
+  accountStatus  AccountStatus   @default(active)
+  userStatus     UserStatus      @default(user)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @default(now())
+  userOnboarding UserOnboarding?
+
+  @@map("users")
+}
+
+model UserOnboarding {
+  id                String                           @id @default(uuid())
+  email             String
+  user              User?                            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String?                          @unique @map("user_id") @db.Uuid
+  verificationCode  UserOnboardingStepStatus         @default(PENDING) @map("verification_code")
+  info              UserOnboardingStepStatus         @default(PENDING)
+  verificationCodes UserOnboardingVerificationCode[]
+  createdAt         DateTime                         @default(now()) @map("created_at")
+  updatedAt         DateTime                         @default(now()) @map("updated_at")
+
+  @@map("user_onboardings")
+}
