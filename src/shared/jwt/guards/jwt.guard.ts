@@ -8,8 +8,7 @@ export class JwtAuthGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const cookies = request.cookies;
-    const token = cookies.token;
+    const token = request.cookies.token;
 
     if (!token) {
       throw new UnauthorizedException(responses.jwtToken.MISSING_AUTHORIZATION_TOKEN);
@@ -19,6 +18,7 @@ export class JwtAuthGuard implements CanActivate {
       request.user = verify(token, process.env.JWT_SECRET);
       return true;
     } catch (error) {
+      console.log(error);
       throw new UnauthorizedException(responses.jwtToken.INVALID_TOKEN);
     }
   }

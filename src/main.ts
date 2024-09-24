@@ -5,10 +5,16 @@ import fastifyCookie from '@fastify/cookie';
 import { AppModule } from './app.module';
 import { config } from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 
 async function bootstrap() {
   config();
+
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+
+  const corsOptions: CorsOptions = { origin: process.env.CORS_OPTIONS_ORIGIN, credentials: true };
+
+  app.enableCors(corsOptions);
 
   app.register(fastifyCookie, { secret: process.env.COOKIES_SECRET });
 
@@ -20,7 +26,9 @@ async function bootstrap() {
       disableErrorMessages: false,
     }),
   );
-  await app.listen(3003, () => {
+
+  app.setGlobalPrefix('/api');
+  await app.listen(process.env.PORT, () => {
     console.log(`Server started on port ${process.env.PORT}`);
   });
 }

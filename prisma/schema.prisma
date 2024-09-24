@@ -12,9 +12,10 @@ enum AccountStatus {
   banned
 }
 
-enum UserStatus {
+enum UserRole {
   user
   admin
+  super_admin
 }
 
 enum UserOnboardingStepStatus {
@@ -49,7 +50,7 @@ model User {
   lastName       String
   password       String
   accountStatus  AccountStatus   @default(active)
-  userStatus     UserStatus      @default(user)
+  userRole       UserRole        @default(user)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @default(now())
   userOnboarding UserOnboarding?
