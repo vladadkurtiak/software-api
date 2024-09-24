@@ -10,6 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import { User } from 'src/shared/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/shared/jwt/guards/jwt.guard';
 import { responses } from 'src/shared/responses/responses';
+import { cookies } from './constants';
 
 @Controller('auth')
 export class UserOnboardingController {
@@ -19,7 +20,7 @@ export class UserOnboardingController {
   async startRegister(@Res({ passthrough: true }) res, @Body() dto: StartRegisterDto) {
     const { token } = await this.userOnboardingService.startRegister(dto);
 
-    res.cookie('token', token);
+    res.cookie(cookies.jwt.userOnboarding.key, token, cookies.jwt.userOnboarding);
 
     return { success: true };
   }

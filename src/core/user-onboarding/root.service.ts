@@ -22,6 +22,12 @@ export class UserOnboardingService {
   ) {}
 
   async startRegister(dto: StartRegisterDto) {
+    await new Promise((r) => {
+      setTimeout(() => {
+        r(null);
+      }, 1700);
+    });
+
     const existingUser = await this.db.user.findFirst({
       where: { email: dto.email },
       include: { userOnboarding: true },
@@ -52,19 +58,6 @@ export class UserOnboardingService {
     });
 
     return { token };
-  }
-
-  async validateOnboardingPassStep(userOnboardingId: string) {
-    const userOnboarding = await this.db.userOnboarding.findFirstOrThrow({
-      where: { id: userOnboardingId },
-      include: { user: true, verificationCodes: { orderBy: { createdAt: 'desc' } } },
-    });
-
-    if (userOnboarding.verificationCode === UserOnboardingStepStatus.COMPLETED) {
-      throw new ConflictException(responses.userOnboarding.STEP_ALREADY_PASSED);
-    }
-
-    return userOnboarding;
   }
 
   async passVerificationCodeStep(userOnboardingId: string, dto: PassVerificationCodeStepBodyPayloadDto) {
@@ -113,7 +106,7 @@ export class UserOnboardingService {
         password: hashedPassword,
         firstName: dto.firstName,
         lastName: dto.lastName,
-        userStatus: 'user',
+        userRole: 'user',
         userOnboarding: { connect: { id: userOnboardingId } },
       },
       select: { id: true },
