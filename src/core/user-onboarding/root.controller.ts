@@ -40,7 +40,7 @@ export class UserOnboardingController {
   ) {
     const { token } = await this.userOnboardingService.passInfoStep(userOnboardingId, dto);
 
-    res.cookie('token', token);
+    res.cookie(cookies.jwt.userOnboarding.key, token, cookies.jwt.userOnboarding);
 
     return { ...responses.userOnboarding.INFO_PASSED };
   }
@@ -49,7 +49,7 @@ export class UserOnboardingController {
   async login(@Body() body: LoginDto, @Res({ passthrough: true }) res) {
     const { token } = await this.userOnboardingService.login(body);
 
-    res.cookie('token', token);
+    res.cookie(cookies.jwt.userOnboarding.key, token, cookies.jwt.userOnboarding);
 
     return { success: true };
   }

@@ -2,7 +2,7 @@ import { JwtService } from '../../shared/jwt/jwt.service';
 import { PrismaService } from 'src/shared/database/prisma.service';
 import { UserOnboardingVerificationCodeService } from './verification-code/verification-code.service';
 
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { responses } from 'src/shared/responses/responses';
 import { UserOnboardingStepStatus } from '@prisma/client';
 
@@ -73,7 +73,7 @@ export class UserOnboardingService {
     const [verificationCode] = onboarding.verificationCodes;
 
     if (verificationCode?.code !== dto.code || !verificationCode) {
-      throw new NotFoundException(responses.userOnboarding.INVALID_VERIFICATION_CODE);
+      throw new ConflictException(responses.userOnboarding.INVALID_VERIFICATION_CODE);
     }
 
     await this.db.userOnboarding.update({
@@ -85,6 +85,11 @@ export class UserOnboardingService {
   }
 
   async passInfoStep(userOnboardingId: string, dto: PassInfoStepBodyDto) {
+    await new Promise((r) => {
+      setTimeout(() => {
+        r(null);
+      }, 1700);
+    });
     const onboarding = await this.db.userOnboarding.findFirstOrThrow({
       where: { id: userOnboardingId },
       include: { user: true, verificationCodes: { orderBy: { createdAt: 'desc' } } },
@@ -123,6 +128,11 @@ export class UserOnboardingService {
   }
 
   async login({ email, password }: LoginDto) {
+    await new Promise((r) => {
+      setTimeout(() => {
+        r(null);
+      }, 1700);
+    });
     const user = await this.db.user.findFirst({
       where: { email },
       select: { id: true, password: true },
@@ -130,9 +140,9 @@ export class UserOnboardingService {
 
     if (!user) throw new ConflictException(responses.auth.USER_NOT_EXISTS);
 
-    const isPasswordValid = await compare(password, user.password);
+    const isValidPassword = await compare(password, user.password);
 
-    if (!isPasswordValid) throw new ConflictException(responses.auth.INVALID_PASSWORD);
+    if (!isValidPassword) throw new ConflictException(responses.auth.INVALID_PASSWORD);
 
     const token = this.jwtService.generateToken({ id: user.id });
 
