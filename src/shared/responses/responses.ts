@@ -44,7 +44,7 @@ export const responses = {
 
     VERIFICATION_CODE_MUST_BE_PROVIDED_FIRST: {
       code: 'VERIFICATION_CODE_MUST_BE_PROVIDED_FIRST',
-      message: 'Verification code must bu provided first',
+      message: 'Verification code must be provided first',
       seccess: false,
     },
   },
