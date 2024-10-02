@@ -7,12 +7,13 @@ import { responses } from 'src/shared/responses/responses';
 import { UserOnboardingStepStatus } from '@prisma/client';
 
 import { StartRegisterDto } from './dto/start-register.dto';
-import { PassVerificationCodeStepBodyPayloadDto } from './dto/pass-verification-code-step.body.dto';
 import { PassInfoStepBodyDto } from './dto/pass-info-step.body.dto';
+import { SignWithGoogleBodyPayloadDto } from './dto/sign-with-google.body.dto';
+import { PassVerificationCodeStepBodyPayloadDto } from './dto/pass-verification-code-step.body.dto';
 import { LoginDto } from './dto/login.dto';
 
 import { compare, hashSync } from 'bcryptjs';
-
+import axios from 'axios';
 @Injectable()
 export class UserOnboardingService {
   constructor(
@@ -20,6 +21,12 @@ export class UserOnboardingService {
     private readonly jwtService: JwtService,
     private readonly userOnboardingVerificationCodeService: UserOnboardingVerificationCodeService,
   ) {}
+
+  async getUserByToken(token: string) {
+    const response = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${token}`);
+
+    return response.data;
+  }
 
   async startRegister(dto: StartRegisterDto) {
     await new Promise((r) => {
@@ -111,7 +118,6 @@ export class UserOnboardingService {
         password: hashedPassword,
         firstName: dto.firstName,
         lastName: dto.lastName,
-        userRole: 'user',
         userOnboarding: { connect: { id: userOnboardingId } },
       },
       select: { id: true },
@@ -135,10 +141,12 @@ export class UserOnboardingService {
     });
     const user = await this.db.user.findFirst({
       where: { email },
-      select: { id: true, password: true },
+      select: { id: true, password: true, provider: true },
     });
 
     if (!user) throw new ConflictException(responses.auth.USER_NOT_EXISTS);
+
+    if (user.provider !== 'email') throw new ConflictException(responses.provider.PROVIDER_NOT_SUPPORTED);
 
     const isValidPassword = await compare(password, user.password);
 
@@ -147,5 +155,32 @@ export class UserOnboardingService {
     const token = this.jwtService.generateToken({ id: user.id });
 
     return { token };
+  }
+
+  async signWithGoogle(dto: SignWithGoogleBodyPayloadDto) {
+    const googleUser = await this.getUserByToken(dto.token);
+
+    const userExists = await this.db.user.findFirst({ where: { email: googleUser.email } });
+
+    if (!userExists) {
+      const user = await this.db.user.create({
+        data: {
+          email: googleUser.email,
+          password: null,
+          firstName: googleUser.given_name,
+          lastName: googleUser.family_name,
+          provider: 'google',
+        },
+        select: { id: true },
+      });
+
+      const token = this.jwtService.generateToken({ id: user.id });
+
+      return { token };
+    } else {
+      const token = this.jwtService.generateToken({ id: userExists.id });
+
+      return { token };
+    }
   }
 }

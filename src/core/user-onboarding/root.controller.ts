@@ -3,6 +3,7 @@ import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { UserOnboardingService } from './root.service';
 
 import { PassVerificationCodeStepBodyPayloadDto } from './dto/pass-verification-code-step.body.dto';
+import { SignWithGoogleBodyPayloadDto } from './dto/sign-with-google.body.dto';
 import { PassInfoStepBodyDto } from './dto/pass-info-step.body.dto';
 import { StartRegisterDto } from './dto/start-register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -48,6 +49,15 @@ export class UserOnboardingController {
   @Post('/login')
   async login(@Body() body: LoginDto, @Res({ passthrough: true }) res) {
     const { token } = await this.userOnboardingService.login(body);
+
+    res.cookie(cookies.jwt.userOnboarding.key, token, cookies.jwt.userOnboarding);
+
+    return { success: true };
+  }
+
+  @Post('/google')
+  async signWithGoogle(@Body() dto: SignWithGoogleBodyPayloadDto, @Res({ passthrough: true }) res) {
+    const { token } = await this.userOnboardingService.signWithGoogle(dto);
 
     res.cookie(cookies.jwt.userOnboarding.key, token, cookies.jwt.userOnboarding);
 
