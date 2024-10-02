@@ -49,6 +49,14 @@ export const responses = {
     },
   },
 
+  provider: {
+    PROVIDER_NOT_SUPPORTED: {
+      code: 'PROVIDER_NOT_SUPPORTED',
+      message: 'Provider not supported',
+      success: false,
+    },
+  },
+
   jwtToken: {
     MISSING_AUTHORIZATION_TOKEN: {
       code: 'MISSING_AUTHORIZATION_TOKEN',
