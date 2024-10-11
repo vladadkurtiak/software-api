@@ -49,6 +49,14 @@ export const responses = {
     },
   },
 
+  user: {
+    YOUR_ACCOUNT_BANNED: {
+      code: 'YOUR_ACCOUNT_BANNED',
+      message: 'Your account banned',
+      seccess: false,
+    },
+  },
+
   provider: {
     PROVIDER_NOT_SUPPORTED: {
       code: 'PROVIDER_NOT_SUPPORTED',
