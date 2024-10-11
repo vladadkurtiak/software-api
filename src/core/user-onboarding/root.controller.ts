@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 
 import { UserOnboardingService } from './root.service';
 
@@ -56,11 +56,17 @@ export class UserOnboardingController {
   }
 
   @Post('/google')
-  async signWithGoogle(@Body() dto: SignWithGoogleBodyPayloadDto, @Res({ passthrough: true }) res) {
+  async signWithGoogle(@Res({ passthrough: true }) res, @Body() dto: SignWithGoogleBodyPayloadDto) {
     const { token } = await this.userOnboardingService.signWithGoogle(dto);
 
     res.cookie(cookies.jwt.userOnboarding.key, token, cookies.jwt.userOnboarding);
 
     return { success: true };
+  }
+
+  @Get('/me')
+  @UseGuards(JwtAuthGuard)
+  async getMe(@User('id') id: string) {
+    return this.userOnboardingService.getMe(id);
   }
 }

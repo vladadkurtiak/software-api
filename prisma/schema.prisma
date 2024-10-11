@@ -54,6 +54,7 @@ model User {
   firstName      String
   lastName       String
   password       String?
+  avatar         String?
   accountStatus  AccountStatus   @default(active)
   userRole       UserRole        @default(user)
   createdAt      DateTime        @default(now())

@@ -118,6 +118,7 @@ export class UserOnboardingService {
         password: hashedPassword,
         firstName: dto.firstName,
         lastName: dto.lastName,
+        avatar: null,
         userOnboarding: { connect: { id: userOnboardingId } },
       },
       select: { id: true },
@@ -169,6 +170,7 @@ export class UserOnboardingService {
           password: null,
           firstName: googleUser.given_name,
           lastName: googleUser.family_name,
+          avatar: googleUser.picture,
           provider: 'google',
         },
         select: { id: true },
@@ -182,5 +184,22 @@ export class UserOnboardingService {
 
       return { token };
     }
+  }
+
+  async getMe(id: string) {
+    const user = await this.db.user.findFirstOrThrow({
+      where: { id },
+      select: {
+        firstName: true,
+        lastName: true,
+        email: true,
+        avatar: true,
+        accountStatus: true,
+      },
+    });
+
+    if (user.accountStatus == 'banned') throw new ConflictException(responses.user.YOUR_ACCOUNT_BANNED);
+
+    return user;
   }
 }
